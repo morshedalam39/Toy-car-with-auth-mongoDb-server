@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -33,6 +33,23 @@ async function run() {
     const toysCollection = client.db('toyCarDB').collection('allToys');
 
 
+    app.get('/toys', async (req, res) => {
+        const cursor = toysCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+
+    app.get("/myToys/:email", async (req, res) => {
+        console.log(req.params.id);
+        const jobs = await toysCollection
+          .find({
+            sellerEmail: req.params.email,
+          })
+          .toArray();
+        res.send(jobs);
+      });
+
 
     app.post('/toys', async (req, res) => {
         const toys = req.body;
@@ -40,6 +57,13 @@ async function run() {
         const result = await toysCollection.insertOne(toys);
         res.send(result);
     });
+
+    app.delete('/myToy/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) }
+        const result = await toysCollection.deleteOne(query);
+        res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
