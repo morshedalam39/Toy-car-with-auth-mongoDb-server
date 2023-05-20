@@ -33,6 +33,12 @@ async function run() {
     const toysCollection = client.db('toyCarDB').collection('allToys');
 
 
+    const indexKeys = { name: 1};
+    const indexOptions = { name: "name" }; 
+    const result = await toysCollection.createIndex(indexKeys, indexOptions);
+    console.log(result);
+
+
     app.get('/toys', async (req, res) => {
         const cursor = toysCollection.find();
         const result = await cursor.limit(20).toArray();
@@ -40,13 +46,27 @@ async function run() {
     })
 
 
-    app.get("/myToys/:email", async (req, res) => {
+    app.get("/myToys", async (req, res) => {
+      const  {num , email}=req.query
+    
+      console.log(num, email);
+      if(+num === - 1 || +num === 1){
         const jobs = await toysCollection
-          .find({
-            sellerEmail: req.params.email,
-          })
-          .toArray();
-        res.send(jobs);
+        .find({
+          sellerEmail: email
+
+        }).sort({price : +num}).toArray();
+      res.send(jobs);
+      }
+      else{
+        const jobs = await toysCollection
+        .find({
+          sellerEmail:email,
+        })
+        .toArray();
+      res.send(jobs);
+      }
+
       });
 
       app.get('/singelToy/:id', async (req, res) => {
@@ -54,6 +74,14 @@ async function run() {
         const query = { _id: new ObjectId(id) }
         const result = await toysCollection.findOne(query);
         res.send(result);
+    })
+
+
+    app.get('/category/:text', async (req , res )=>{
+      const cat=req.params.text
+      const result= await toysCollection.find({category: {$eq: cat}}).toArray()
+      res.send(result)
+      
     })
 
 
@@ -87,6 +115,20 @@ async function run() {
           },
         };
         const result = await toysCollection.updateOne(filter, updateToy);
+        res.send(result);
+      });
+
+
+      app.get("/searchToyName/:text", async (req, res) => {
+        const text = req.params.text;
+        const result = await toysCollection
+          .find({
+            $or: [
+              { name: { $regex: text, $options: "i" } },
+             
+            ],
+          })
+          .toArray();
         res.send(result);
       });
 
