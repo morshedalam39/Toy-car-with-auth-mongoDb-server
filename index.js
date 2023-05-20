@@ -35,13 +35,12 @@ async function run() {
 
     app.get('/toys', async (req, res) => {
         const cursor = toysCollection.find();
-        const result = await cursor.toArray();
+        const result = await cursor.limit(20).toArray();
         res.send(result);
     })
 
 
     app.get("/myToys/:email", async (req, res) => {
-        console.log(req.params.id);
         const jobs = await toysCollection
           .find({
             sellerEmail: req.params.email,
@@ -49,6 +48,13 @@ async function run() {
           .toArray();
         res.send(jobs);
       });
+
+      app.get('/singelToy/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) }
+        const result = await toysCollection.findOne(query);
+        res.send(result);
+    })
 
 
     app.post('/toys', async (req, res) => {
@@ -66,6 +72,23 @@ async function run() {
         const result = await toysCollection.deleteOne(query);
         res.send(result);
     })
+
+
+
+    app.put("/updateToy/:id", async (req, res) => {
+        const id = req.params.id;
+        const body = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const updateToy= {
+          $set: {
+            price: body.price,
+            quantity: body.quantity,    
+            description: body.description,
+          },
+        };
+        const result = await toysCollection.updateOne(filter, updateToy);
+        res.send(result);
+      });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
