@@ -39,6 +39,7 @@ async function run() {
     // console.log(result);
 
 
+    //get all toy
     app.get('/toys', async (req, res) => {
         const cursor = toysCollection.find();
         const result = await cursor.limit(20).toArray();
@@ -46,6 +47,7 @@ async function run() {
     })
 
 
+    //get my toy
     app.get("/myToys", async (req, res) => {
       const  {num , email}=req.query
     
@@ -69,6 +71,7 @@ async function run() {
 
       });
 
+      //get singel data
       app.get('/singelToy/:id', async (req, res) => {
         const id = req.params.id;
         const query = { _id: new ObjectId(id) }
@@ -77,6 +80,7 @@ async function run() {
     })
 
 
+    //get sub categoy data
     app.get('/category/:text', async (req , res )=>{
       const cat=req.params.text
       const result= await toysCollection.find({category: {$eq: cat}}).toArray()
@@ -85,6 +89,7 @@ async function run() {
     })
 
 
+    //post database
     app.post('/toys', async (req, res) => {
         const toys = req.body;
         console.log(toys);
@@ -103,6 +108,7 @@ async function run() {
 
 
 
+    //update
     app.put("/updateToy/:id", async (req, res) => {
         const id = req.params.id;
         const body = req.body;
@@ -119,6 +125,7 @@ async function run() {
       });
 
 
+      //search by name
       app.get("/searchToyName/:text", async (req, res) => {
         const text = req.params.text;
         const result = await toysCollection
